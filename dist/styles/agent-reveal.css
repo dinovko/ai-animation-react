@@ -35,3 +35,27 @@
 .ar-dev-btns label{display:inline-flex;gap:4px;align-items:center;cursor:pointer}
 
 @media (prefers-reduced-motion:reduce){.ar-overlay{display:none}}
+
+/* Automatic reveal (AgentRevealAuto) */
+.ar-auto{display:contents}
+.ar-ghost{position:absolute;left:0;top:0;border-radius:2px;will-change:transform,opacity}
+.ar-ghost.gray{background:rgba(120,128,150,.34)}
+.ar-ghost.accent{background:var(--c);opacity:.8}
+.ar-frame.ar-flag{background:rgba(229,72,77,.06)}
+.ar-frame.ar-flag.ar-done{background:rgba(229,72,77,.1)}
+.ar-cursor.k-text svg,.ar-cursor.k-cross svg{margin:-8px 0 0 -8px}
+.ar-agent .ar-dim{font-size:9.5px;padding:2px 4px}
+
+.ar-hud{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:9100;display:flex;align-items:center;gap:10px;max-width:calc(100vw - 24px);
+  padding:7px 8px 7px 12px;background:#111318;color:#e8eaf0;border:1px solid rgba(255,255,255,.12);border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.35);
+  font:500 12px/1 system-ui,-apple-system,"Segoe UI",sans-serif;white-space:nowrap}
+.ar-hud b{font-weight:700;color:#fff}
+.ar-hud-dots{display:inline-flex}
+.ar-hud-dots i{width:12px;height:12px;border-radius:50%;border:2px solid #111318;margin-left:-4px}
+.ar-hud-dots i:first-child{margin-left:0}
+.ar-hud-sep{width:1px;height:14px;background:rgba(255,255,255,.18)}
+.ar-hud-bar{width:64px;height:4px;border-radius:2px;background:rgba(255,255,255,.16);overflow:hidden}
+.ar-hud-bar i{display:block;height:100%;background:#4f8cff;transition:width .2s ease}
+.ar-hud button{font:inherit;color:#fff;background:rgba(255,255,255,.1);border:0;border-radius:6px;padding:5px 9px;cursor:pointer}
+.ar-hud button:hover{background:rgba(255,255,255,.2)}
+.ar-hud .ar-hud-x{background:transparent;padding:5px 7px;font-size:15px}

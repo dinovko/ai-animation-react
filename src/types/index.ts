@@ -44,3 +44,42 @@ export interface AgentRevealProps {
   onStart?: () => void;
   onComplete?: () => void;
 }
+
+export type CursorKind = "arrow" | "text" | "cross";
+/** What the overlay writes next to a frame / cursor: the agent name, the `w × h` size chip, both, or nothing. */
+export type LabelMode = "name" | "size" | "both" | "none";
+export type GhostKind = "none" | "gray" | "accent";
+
+export interface AgentRevealAutoProps {
+  children: ReactNode;
+  /** Stable id for the "play once" memory. Without it the scan plays on every mount. */
+  id?: string;
+  /** Number of agents (the pool size) or your own list. Default 16. */
+  agents?: number | AgentDef[];
+  /** Multiplier of every layer's scan time (1 = default). Use `speed` for the live playback rate. */
+  duration?: number;
+  /** Initial playback rate: 0.5, 1, 2 or 4. The HUD cycles through them. */
+  speed?: number;
+  /** Bottom bar: agents, layers done / total, progress, Tour, speed, close. Default: only in dev mode. */
+  hud?: boolean;
+  /** Text next to frames. Default "size". */
+  labels?: LabelMode;
+  cursors?: boolean;
+  frames?: boolean;
+  /** Gray / accent placeholders that fade out while a layer is being drawn. Default true. */
+  ghosts?: boolean;
+  /** Elements matching this selector get a red frame. */
+  flag?: string;
+  /** Share (0..1) of layers that are additionally framed in red, picked deterministically. Default 0.05. */
+  flagRate?: number;
+  /** Stop discovery after this many layers (document order). Default 500. */
+  maxLayers?: number;
+  /** Layers below the fold stay hidden and are drawn when they scroll into view. Off: everything starts at once. Default true. */
+  viewportOnly?: boolean;
+  /** Return false to leave an element (and its subtree) out. Elements with `data-ar-skip` are always left out. */
+  filter?: (el: Element) => boolean;
+  once?: boolean;
+  disabled?: boolean;
+  className?: string;
+  onComplete?: () => void;
+}

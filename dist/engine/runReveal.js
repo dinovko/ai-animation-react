@@ -8,8 +8,8 @@ import { EMPTY_CLIP, frameAt, toClipPath } from "./presets";
  */
 export function runReveal(o) {
     const { el } = o;
-    const visual = createVisual(o.agent, { cursor: o.cursor, frame: o.frame });
-    let raf = 0, t0 = 0, over = false;
+    const visual = createVisual(o.agent, { ...o.visual, cursor: o.cursor, frame: o.frame });
+    let raf = 0, last = 0, elapsed = 0, over = false;
     let resolve;
     const done = new Promise((r) => { resolve = r; });
     el.style.clipPath = EMPTY_CLIP;
@@ -28,15 +28,18 @@ export function runReveal(o) {
     const tick = (now) => {
         if (over)
             return;
-        if (!t0)
-            t0 = now;
-        const raw = Math.min(1, (now - t0) / Math.max(1, o.duration));
-        const box = contentBox(el);
+        if (!last)
+            last = now;
+        elapsed += (now - last) * (o.speed?.() ?? 1);
+        last = now;
+        const raw = Math.min(1, elapsed / Math.max(1, o.duration));
+        const box = (o.measure ?? contentBox)(el);
         if (box) {
             const wr = el.getBoundingClientRect();
-            const f = frameAt(o.kind, easeInOutCubic(raw), box.width, box.height);
+            const p = easeInOutCubic(raw);
+            const f = frameAt(o.kind, p, box.width, box.height);
             el.style.clipPath = raw >= 1 ? "" : toClipPath(f.poly, box.left - wr.left, box.top - wr.top);
-            visual.update(box, f);
+            visual.update(box, f, p);
         }
         o.onProgress?.(raw);
         if (raw < 1)

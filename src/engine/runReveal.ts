@@ -1,16 +1,22 @@
 import type { AgentDef, RevealKind } from "../types";
-import { contentBox, easeInOutCubic } from "./geometry";
-import { createVisual } from "./overlay";
+import { contentBox, easeInOutCubic, type Box } from "./geometry";
+import { createVisual, type VisualOptions } from "./overlay";
 import { EMPTY_CLIP, frameAt, toClipPath } from "./presets";
 
 export interface RunOptions {
-  el: HTMLElement;
+  el: HTMLElement | SVGElement;
   agent: AgentDef;
   kind: RevealKind;
   duration: number;
   cursor: boolean;
   frame: boolean;
   onProgress?: (raw: number) => void;
+  /** Box to scan. Default: the union of the element's children (`contentBox`). */
+  measure?: (el: HTMLElement | SVGElement) => Box | null;
+  /** Live playback rate, read every frame. Default 1. */
+  speed?: () => number;
+  /** Extra visual options (cursor shape, labels, placeholder, flag). */
+  visual?: Partial<Omit<VisualOptions, "cursor" | "frame">>;
 }
 export interface RunHandle {
   /** resolves when the scan ends (naturally or cancelled) and the clip is removed */
@@ -25,8 +31,8 @@ export interface RunHandle {
  */
 export function runReveal(o: RunOptions): RunHandle {
   const { el } = o;
-  const visual = createVisual(o.agent, { cursor: o.cursor, frame: o.frame });
-  let raf = 0, t0 = 0, over = false;
+  const visual = createVisual(o.agent, { ...o.visual, cursor: o.cursor, frame: o.frame });
+  let raf = 0, last = 0, elapsed = 0, over = false;
   let resolve!: () => void;
   const done = new Promise<void>((r) => { resolve = r; });
 
@@ -43,14 +49,17 @@ export function runReveal(o: RunOptions): RunHandle {
 
   const tick = (now: number) => {
     if (over) return;
-    if (!t0) t0 = now;
-    const raw = Math.min(1, (now - t0) / Math.max(1, o.duration));
-    const box = contentBox(el);
+    if (!last) last = now;
+    elapsed += (now - last) * (o.speed?.() ?? 1);
+    last = now;
+    const raw = Math.min(1, elapsed / Math.max(1, o.duration));
+    const box = (o.measure ?? contentBox)(el as HTMLElement);
     if (box) {
       const wr = el.getBoundingClientRect();
-      const f = frameAt(o.kind, easeInOutCubic(raw), box.width, box.height);
+      const p = easeInOutCubic(raw);
+      const f = frameAt(o.kind, p, box.width, box.height);
       el.style.clipPath = raw >= 1 ? "" : toClipPath(f.poly, box.left - wr.left, box.top - wr.top);
-      visual.update(box, f);
+      visual.update(box, f, p);
     }
     o.onProgress?.(raw);
     if (raw < 1) raf = requestAnimationFrame(tick); else end(true);
