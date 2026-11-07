@@ -113,6 +113,20 @@ items.map((item, i) => (
 
 Keep `id` stable. An index is fine when the list order is stable. A changing index makes `once` treat the row as a new item.
 
+### Whole page, automatic
+
+`AgentRevealAuto` reveals a whole subtree without wrapping each block. It splits the subtree into layers (text, media, controls, boxes with a background or border) and a pool of agents draws them one by one. A layer starts after its parent layer is done. Each layer gets a frame with a `w × h` chip, a cursor (arrow, text beam or crosshair), and a placeholder that fades out. About 5% of layers get a red frame.
+
+```tsx
+import { AgentRevealAuto } from "ai-animation-react";
+
+<AgentRevealAuto id="app" agents={28} hud>
+  <App />
+</AgentRevealAuto>
+```
+
+Main props: `agents` (pool size or your own list, default 16), `speed` (0.5, 1, 2, 4), `hud` (bottom bar: agents, layers done / total, Tour, speed, close; default only in dev mode), `labels` (`"size"`, `"name"`, `"both"`, `"none"`), `flag` (selector for red frames), `flagRate`, `maxLayers`, `viewportOnly`, `filter`. Put `data-ar-skip` on an element to leave it out. The wrapper is `display: contents`.
+
 ### Props
 
 | Prop | Type | Default | Meaning |
@@ -399,6 +413,18 @@ items.map((item, i) => (
 
 `id` должен быть стабильным. Индекс годится, только если порядок списка не прыгает. Новый индекс для `once` — это уже другой элемент.
 
+### Вся страница, автоматически
+
+`AgentRevealAuto` открывает целое поддерево без обёртки на каждый блок. Оно делится на слои (текст, медиа, контролы, боксы с фоном или рамкой), и пул агентов рисует их по очереди. Слой стартует после того, как готов родительский слой. У каждого слоя своя рамка с подписью `ширина × высота`, свой курсор (стрелка, текстовая «I», перекрестие) и плейсхолдер, который гаснет. Около 5% слоёв получают красную рамку.
+
+```tsx
+<AgentRevealAuto id="app" agents={28} hud>
+  <App />
+</AgentRevealAuto>
+```
+
+Главные пропы: `agents` (размер пула или свой список, по умолчанию 16), `speed` (0.5, 1, 2, 4), `hud` (нижняя панель: агенты, слои готово / всего, Tour, скорость, закрыть; по умолчанию только в dev), `labels`, `flag` (селектор красных рамок), `flagRate`, `maxLayers`, `viewportOnly`, `filter`. Атрибут `data-ar-skip` исключает элемент. Обёртка — `display: contents`.
+
 ### Пропы
 
 | Проп | Тип | По умолчанию | Смысл |
@@ -684,6 +710,18 @@ items.map((item, i) => (
 ```
 
 `id` тұрақты болуы керек. Индекс тізім реті өзгермесе ғана жарайды. Жаңа индекс `once` үшін басқа элемент болып саналады.
+
+### Бүкіл бет, автоматты түрде
+
+`AgentRevealAuto` әр блокты орамай-ақ бүкіл ішкі ағашты ашады. Ол қабаттарға бөлінеді (мәтін, медиа, басқару элементтері, фоны немесе жақтауы бар бокстар), агенттер пулы оларды кезекпен салады. Қабат ата-ана қабаты дайын болғаннан кейін басталады. Әр қабатта `ені × биіктігі` жазуы бар жақтау, өз курсоры (көрсеткі, мәтін «I», айқас) және сөніп қалатын толтырғыш болады. Қабаттардың шамамен 5%-ына қызыл жақтау беріледі.
+
+```tsx
+<AgentRevealAuto id="app" agents={28} hud>
+  <App />
+</AgentRevealAuto>
+```
+
+Негізгі проптар: `agents` (пул өлшемі немесе өз тізіміңіз, әдепкі 16), `speed` (0.5, 1, 2, 4), `hud` (төменгі панель; әдепкіде тек dev режимінде), `labels`, `flag`, `flagRate`, `maxLayers`, `viewportOnly`, `filter`. `data-ar-skip` элементті алып тастайды. Орауыш — `display: contents`.
 
 ### Проптар
 
