@@ -77,11 +77,10 @@ export class AutoController {
   start(root: HTMLElement, opts: AutoOptions) {
     this.stop();
     this.last = { root, opts };
-    const layers = discoverLayers(root, { maxLayers: opts.maxLayers, viewportOnly: opts.viewportOnly, filter: opts.filter });
+    const layers = discoverLayers(root, { maxLayers: opts.maxLayers, viewportOnly: false, filter: opts.filter });
     const n = layers.length;
     const saved = layers.map((l) => l.el.style.clipPath);
-    layers.forEach((l) => { l.el.style.clipPath = EMPTY_CLIP; });
-    root.inert = true;
+    layers.forEach((l) => { l.el.style.clipPath = EMPTY_CLIP; (l.el as HTMLElement).inert = true; });
 
     const state = new Uint8Array(n); // 0 pending, 1 running, 2 done
     const idle = opts.agents.map((_, i) => i).reverse();
@@ -90,19 +89,23 @@ export class AutoController {
     let done = 0, running = 0, head = 0, wave = 0, over = false;
     this.set({ agents: opts.agents.length, total: n, done: 0, running: 0, finished: n === 0 });
 
+    // Layers below the fold stay hidden (and wait) until they scroll into view. With viewportOnly off all start at once.
+    const inView = new Uint8Array(n).fill(opts.viewportOnly ? 0 : 1);
+    let io: IntersectionObserver | null = null;
+
     const restore = () => {
-      layers.forEach((l, i) => { l.el.style.clipPath = saved[i]; });
-      root.inert = false;
+      layers.forEach((l, i) => { l.el.style.clipPath = saved[i]; (l.el as HTMLElement).inert = false; });
     };
     const cancel = () => {
       if (over) return;
       over = true;
+      io?.disconnect();
       timers.forEach(clearTimeout);
       handles.forEach((h) => h.cancel());
       restore();
     };
     this.cancelFn = cancel;
-    if (n === 0) { root.inert = false; opts.onComplete?.(); return; }
+    if (n === 0) { opts.onComplete?.(); return; }
 
     const launch = (i: number, agentIdx: number, delay: number) => {
       const l = layers[i];
@@ -121,6 +124,7 @@ export class AutoController {
           if (over) return;
           handles.delete(i);
           l.el.style.clipPath = saved[i];
+          (l.el as HTMLElement).inert = false;
           state[i] = 2; done++; running--; idle.push(agentIdx);
           this.set({ done, running });
           pump();
@@ -136,7 +140,7 @@ export class AutoController {
         while (head < n && state[head] !== 0) head++;
         let pick = -1;
         for (let i = head; i < n; i++) {
-          if (state[i] === 0 && (layers[i].parent < 0 || state[layers[i].parent] === 2)) { pick = i; break; }
+          if (state[i] === 0 && inView[i] === 1 && (layers[i].parent < 0 || state[layers[i].parent] === 2)) { pick = i; break; }
         }
         if (pick < 0) break;
         state[pick] = 1; running++;
@@ -144,13 +148,24 @@ export class AutoController {
         this.set({ running });
       }
       if (done === n) {
-        root.inert = false;
+        io?.disconnect();
         this.cancelFn = null;
         over = true;
         this.set({ finished: true, running: 0 });
         opts.onComplete?.();
       }
     };
-    pump();
+    if (opts.viewportOnly) {
+      const at = new Map<Element, number>(layers.map((l, i) => [l.el, i]));
+      io = new IntersectionObserver((entries) => {
+        let changed = false;
+        for (const e of entries) {
+          const i = at.get(e.target);
+          if (i !== undefined && e.isIntersecting && inView[i] === 0) { inView[i] = 1; changed = true; }
+        }
+        if (changed) pump();
+      }, { rootMargin: "0px 0px -8% 0px" });
+      layers.forEach((l) => io?.observe(l.el));
+    } else pump();
   }
 }

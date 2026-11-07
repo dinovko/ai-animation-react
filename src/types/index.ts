@@ -74,7 +74,7 @@ export interface AgentRevealAutoProps {
   flagRate?: number;
   /** Stop discovery after this many layers (document order). Default 500. */
   maxLayers?: number;
-  /** Only layers that intersect the viewport when the scan starts. Default true. */
+  /** Layers below the fold stay hidden and are drawn when they scroll into view. Off: everything starts at once. Default true. */
   viewportOnly?: boolean;
   /** Return false to leave an element (and its subtree) out. Elements with `data-ar-skip` are always left out. */
   filter?: (el: Element) => boolean;
